@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ベトナム語 発音＆単語マスター Pro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+        .game-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+        }
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+        .mode-btn {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: bold;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+        .score-board {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .display-area {
+            font-size: 60px;
+            margin: 15px 0;
+            user-select: none;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .sound-btn-large {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .sound-btn-large:active {
+            transform: scale(0.95);
+        }
+        .sound-btn-small {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.9rem;
+            color: #2563eb;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .hint-text {
+            font-size: 1.5rem;
+            color: #ef4444;
+            font-weight: bold;
+            margin-top: 10px;
+            display: none;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            background-color: #ffffff;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 12px 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+        }
+        .btn:hover {
+            background-color: #e8f4fe;
+            border-color: #3b82f6;
+        }
+        .ruby-text {
+            font-size: 0.75rem;
+            color: #888;
+            font-weight: normal;
+            margin-top: 4px;
+        }
+        .mark-text {
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .action-btn {
+            background: none;
+            border: 1px dashed #94a3b8;
+            border-radius: 8px;
+            padding: 8px 15px;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .action-btn:hover {
+            background: #f8fafc;
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-card">
+    <div class="mode-selector">
+        <button class="mode-btn active" onclick="setMode('normal')">①イラスト</button>
+        <button class="mode-btn" onclick="setMode('listening')">②耳あて</button>
+        <button class="mode-btn" onclick="setMode('tone')">③声調</button>
+        <button class="mode-btn" onclick="setMode('alphabet')">④文字</button>
+    </div>
+
+    <div class="score-board">スコア: <span id="score">0</span></div>
+    
+    <div id="display-container" class="display-area">
+        <div id="emoji">🍎</div>
+    </div>
+    
+    <div id="instruction" style="color: #666; font-size: 0.85rem; margin-bottom: 5px;">正しいベトナム語を選んでね！</div>
+
+    <div class="options-grid" id="options"></div>
+
+    <button id="hint-btn" class="action-btn" style="display: none;" onclick="showHint()">👀 分からない？ ヒントを見る</button>
+</div>
+
+<script>
+    const words = [
+        { emoji: "🍎", word: "táo", ruby: "タオ", tone: 2 },
+        { emoji: "🍌", word: "chuối", ruby: "チュオイ", tone: 2 },
+        { emoji: "☕", word: "cà phê", ruby: "カフェ", tone: 3 },
+        { emoji: "🍞", word: "bánh mì", ruby: "バインミー", tone: 2 },
+        { emoji: "水", word: "nước", ruby: "ヌオク", tone: 2 },
+        { emoji: "🥛", word: "sữa", ruby: "スア", tone: 5 },
+        { emoji: "🍚", word: "cơm", ruby: "コム", tone: 1 },
+        { emoji: "🥩", word: "thịt", ruby: "ティット", tone: 6 },
+        { emoji: "🍵", word: "trà", ruby: "チャ", tone: 3 },
+        { emoji: "📱", word: "điện thoại", ruby: "ディエントアイ", tone: 6 },
+        { emoji: "💻", word: "máy tính", ruby: "マイティン", tone: 2 },
+        { emoji: "🚗", word: "xe", ruby: "セー", tone: 1 },
+        { emoji: "🏠", word: "nhà", ruby: "ニャー", tone: 3 },
+        { emoji: "🐶", word: "chó", ruby: "チョー", tone: 2 },
+        { emoji: "🐱", word: "mèo", ruby: "メオ", tone: 3 },
+        { emoji: "☀️", word: "nắng", ruby: "ナン", tone: 2 },
+        { emoji: "🌧️", word: "mưa", ruby: "ムア", tone: 1 },
+        { emoji: "👍", word: "tốt", ruby: "トット", tone: 2 },
+        { emoji: "❤️", word: "yêu", ruby: "イエウ", tone: 1 },
+        { emoji: "👀", word: "mắt", ruby: "マット", tone: 2 }
+    ];
+
+    const alphabetWords = [
+        { display: "c _ m", word: "cơm", meaning: "🍚 ご飯", answer: "ơ", options: ["ơ", "ô", "â", "a"] },
+        { display: "m _ a", word: "mưa", meaning: "🌧️ 雨", answer: "ư", options: ["ư", "u", "ơ", "o"] },
+        { display: "ch _ n", word: "chân", meaning: "🦶 足", answer: "â", options: ["â", "ă", "a", "ơ"] },
+        { display: "t _ i", word: "tôi", meaning: "🧍 私", answer: "ô", options: ["ô", "ơ", "o", "u"] },
+        { display: "x _ m", word: "xem", meaning: "👀 見る", answer: "e", options: ["e", "ê", "a", "ă"] },
+        { display: "đ _ m", word: "đêm", meaning: "🌙 夜", answer: "ê", options: ["ê", "e", "ơ", "â"] },
+        { display: "c _ y", word: "cây", meaning: "🌳 木", answer: "â", options: ["â", "ă", "a", "ơ"] },
+        { display: "_ ường", word: "đường", meaning: "🛣️ 道", answer: "đ", options: ["đ", "d", "b", "p"] },
+        { display: "_ i", word: "đi", meaning: "🚶 行く", answer: "đ", options: ["đ", "d", "t", "th"] },
+        { display: "b _ n", word: "bạn", meaning: "🧑‍🤝‍🧑 友達", answer: "a", options: ["a", "ă", "â", "ơ"] }
+    ];
+
+    const toneNames = {
+        1: { mark: "◌", name: "平声 (記号なし)" },
+        2: { mark: "◌́", name: "鋭声 ( á )" },
+        3: { mark: "◌̀", name: "玄声 ( à )" },
+        4: { mark: "◌̉", name: "問声 ( ả )" },
+        5: { mark: "◌̃", name: "跌声 ( ã )" },
+        6: { mark: "◌̣", name: "重声 ( ạ )" }
+    };
+
+    let currentQuestion = {};
+    let score = 0;
+    let currentMode = 'normal';
+    let isHintShown = false;
+    let currentAudio = null; // 現在再生中のAudioオブジェクトを保持する変数
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playBuzzer() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc1.type = 'sawtooth'; osc2.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(150, now);
+        osc2.frequency.setValueAtTime(156, now);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.setValueAtTime(0, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now + 0.25);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination);
+        osc1.start(now); osc2.start(now); osc1.stop(now + 0.5); osc2.stop(now + 0.5);
+    }
+
+    // 音声再生関数（再生中の音を一度止めてから鳴らす）
+    function playGoogleTTS(text) {
+        // 現在再生中の音声があれば止める
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+        }
+        if ('speechSynthesis' in window && speechSynthesis.speaking) {
+            speechSynthesis.cancel();
+        }
+
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=vi&client=tw-ob`;
+        currentAudio = new Audio(url);
+        currentAudio.play().catch(() => {
+            if ('speechSynthesis' in window) {
+                const uttr = new SpeechSynthesisUtterance(text);
+                uttr.lang = 'vi-VN';
+                speechSynthesis.speak(uttr);
+            }
+        });
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('hint-btn').style.display = 'none';
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        isHintShown = false;
+        document.getElementById('hint-btn').style.display = 'none';
+        const displayContainer = document.getElementById('display-container');
+        const instruction = document.getElementById('instruction');
+
+        if (currentMode === 'alphabet') {
+            currentQuestion = alphabetWords[Math.floor(Math.random() * alphabetWords.length)];
+            displayContainer.innerHTML = `
+                <div style="font-size: 2.8rem; font-weight: bold; color: #1e293b; letter-spacing: 2px;">${currentQuestion.display}</div>
+                <div style="font-size: 1.1rem; color: #64748b;">${currentQuestion.meaning}</div>
+                <button class="sound-btn-small" onclick="playGoogleTTS('${currentQuestion.word}')">🔊 音声を聞く</button>
+            `;
+            instruction.textContent = "空欄に入る正しい文字を選んでね！";
+            playGoogleTTS(currentQuestion.word);
+            setupAlphabetOptions();
+        } else {
+            currentQuestion = words[Math.floor(Math.random() * words.length)];
+            if (currentMode === 'normal') {
+                displayContainer.innerHTML = `<div id="emoji" style="font-size: 70px;">${currentQuestion.emoji}</div>`;
+                instruction.textContent = "イラストに合う単語を選んでね！";
+                setupWordOptions();
+            } else if (currentMode === 'listening') {
+                displayContainer.innerHTML = `<div class="sound-btn-large" onclick="playGoogleTTS('${currentQuestion.word}')">🔊</div>`;
+                instruction.textContent = "音を聞いて、単語を選んでね！";
+                playGoogleTTS(currentQuestion.word);
+                setupWordOptions();
+            } else if (currentMode === 'tone') {
+                displayContainer.innerHTML = `
+                    <div class="sound-btn-large" onclick="playGoogleTTS('${currentQuestion.word}')">🔊</div>
+                    <div id="hint-word" class="hint-text">${currentQuestion.word} (${currentQuestion.emoji})</div>
+                `;
+                instruction.textContent = "音を聞いて、正しい声調記号を選んでね！";
+                document.getElementById('hint-btn').style.display = 'block';
+                playGoogleTTS(currentQuestion.word);
+                setupToneOptions();
+            }
+        }
+    }
+
+    function showHint() {
+        isHintShown = true;
+        document.getElementById('hint-word').style.display = 'block';
+        document.getElementById('hint-btn').style.display = 'none';
+        setupToneOptions();
+    }
+
+    function setupWordOptions() {
+        let options = [currentQuestion];
+        while (options.length < 4) {
+            let randomWord = words[Math.floor(Math.random() * words.length)];
+            if (!options.includes(randomWord)) options.push(randomWord);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        const optionsContainer = document.getElementById('options');
+        optionsContainer.innerHTML = '';
+        options.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.innerHTML = `<span>${item.word}</span>`;
+            btn.onclick = () => checkAnswer(item.word === currentQuestion.word);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function setupToneOptions() {
+        const optionsContainer = document.getElementById('options');
+        optionsContainer.innerHTML = '';
+        
+        let correctTone = currentQuestion.tone;
+        let toneKeys = [1, 2, 3, 4, 5, 6];
+        let options = [correctTone];
+        
+        while (options.length < 4) {
+            let randTone = toneKeys[Math.floor(Math.random() * toneKeys.length)];
+            if (!options.includes(randTone)) options.push(randTone);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        options.forEach(toneKey => {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            
+            const rubyHtml = isHintShown ? `<span class="ruby-text">${toneNames[toneKey].name}</span>` : '';
+            btn.innerHTML = `<span class="mark-text">${toneNames[toneKey].mark}</span>${rubyHtml}`;
+            
+            btn.onclick = () => checkAnswer(toneKey === correctTone);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function setupAlphabetOptions() {
+        const optionsContainer = document.getElementById('options');
+        optionsContainer.innerHTML = '';
+        
+        let options = [...currentQuestion.options];
+        options.sort(() => Math.random() - 0.5);
+
+        options.forEach(letter => {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.fontSize = '1.8rem';
+            btn.innerHTML = letter;
+            btn.onclick = () => {
+                if (letter === currentQuestion.answer) {
+                    document.querySelector('.display-area div:first-child').innerHTML = 
+                        currentQuestion.display.replace('_', `<span style="color:#ef4444;">${letter}</span>`);
+                    setTimeout(() => checkAnswer(true), 600);
+                } else {
+                    checkAnswer(false);
+                }
+            };
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(isCorrect) {
+        if (isCorrect) {
+            playGoogleTTS(currentQuestion.word);
+            score += 10;
+            document.getElementById('score').textContent = score;
+            // 正解音声をしっかり聞き終わるタイミング（700ms後）で次へ遷移
+            setTimeout(() => {
+                nextQuestion();
+            }, 700);
+        } else {
+            playBuzzer();
+        }
+    }
+
+    nextQuestion();
+</script>
+
+</body>
+</html>
